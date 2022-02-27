@@ -1,8 +1,14 @@
 package blockchain
 
-import "time"
+import (
+	"crypto/rand"
+	"io"
+	"time"
+)
 
 // Blockchain a simple blockchain structure.
+//
+// Please use NewBlockchain() as the constructor (which gives a genesis block).
 type Blockchain struct {
 	Blocks 		[]*Block	// where all the blocks are held, sequentially.
 	Size		int			// number of blocks in the chain
@@ -15,7 +21,7 @@ func (bc *Blockchain) NextBlockId() int {
 }
 
 // AddNewBlock adds a new block to the top of the blockchain, given content and nonce.
-func (bc *Blockchain) AddNewBlock(content []byte, nonce [12]byte) {
+func (bc *Blockchain) AddNewBlock(content []byte, nonce [32]byte) {
 	top := bc.Blocks[bc.Size - 1]
 	header := &Header{
 		Version:        bc.NextBlockId(),
@@ -57,4 +63,39 @@ func Verify(bc *Blockchain) (bool, *Block) {
 		}
 	}
 	return true, nil
+}
+
+// NewNonce generates a random new nonce.
+func NewNonce() ([32]byte, error) {
+	tmp := make([]byte, 32)
+	var err error
+	_, err = io.ReadFull(rand.Reader, tmp)
+	var nonce [32]byte
+	copy(nonce[:], tmp)
+	return nonce, err
+}
+
+// NewBlockchain returns the pointer to a new blockchain with a genesis block.
+func NewBlockchain() (*Blockchain, error) {
+	nonce, err := NewNonce()
+	if err != nil {
+		return nil, err
+	}
+	header := &Header{
+		Version:        0,
+		Timestamp:      time.Now().String(),
+		PreviousHash:   "",
+		MerkleRootHash: "",
+		Nonce:          nonce,
+		TargetHash:     "",
+	}
+	block := &Block{
+		PrevBlock: nil,
+		Header:    header,
+		Content:   []byte("genesis block"),
+	}
+	return &Blockchain{
+		Blocks: []*Block{block},
+		Size:   1,
+	}, err
 }

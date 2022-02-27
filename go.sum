@@ -1,2 +1,6 @@
 github.com/mcxxmc/simple-implementation-ecc v1.0.1 h1:lLHqBr8RE9Ux4/cGHLbbf1Y/BgRZ3jOM9QYn8xowV6c=
 github.com/mcxxmc/simple-implementation-ecc v1.0.1/go.mod h1:P49S5SmBNEXtD3bIiucoMeQeJoEYpr7+Eh2gwpNczRA=
+github.com/mcxxmc/simple-implementation-ecc v1.0.2 h1:dWdecfOwUi8J/yW+BUlbAW++E1nfbSpOtA//otNJzBo=
+github.com/mcxxmc/simple-implementation-ecc v1.0.2/go.mod h1:P49S5SmBNEXtD3bIiucoMeQeJoEYpr7+Eh2gwpNczRA=
+github.com/mcxxmc/simple-implementation-ecc v1.1.0 h1:SR5LLIm+HoBqbUxB6g94t3Bk8XaxDeZ2HHsbmDuDyh4=
+github.com/mcxxmc/simple-implementation-ecc v1.1.0/go.mod h1:P49S5SmBNEXtD3bIiucoMeQeJoEYpr7+Eh2gwpNczRA=

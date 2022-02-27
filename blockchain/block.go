@@ -11,7 +11,7 @@ type Header struct {
 	Timestamp      string   // the time when the block is last created
 	PreviousHash   string   // the hash code of the previous block
 	MerkleRootHash string   // the hash of the Merkle root, NOT IMPLEMENTED  //todo
-	Nonce          [12]byte // the 128-bit "number once"
+	Nonce          [32]byte // the 256-bit "number once"
 	TargetHash     string   // the difficulty, NOT IMPLEMENTED
 }
 
