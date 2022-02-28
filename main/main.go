@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	ecc "github.com/mcxxmc/simple-implementation-ecc/ecc"
+	"github.com/mcxxmc/simple-implementation-ecc/ecc"
 	"math/rand"
 	"time"
 )
