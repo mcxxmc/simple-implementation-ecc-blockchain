@@ -11,7 +11,7 @@ type Buffer struct {
 
 func NewBuffer(maxSize int) *Buffer {
 	return &Buffer{
-		Data:         make([]byte, 0),
+		Data:         make([]byte, maxSize),
 		maxSize:      maxSize,
 		BytesWritten: 0,
 	}
@@ -33,7 +33,7 @@ func (buffer *Buffer) Clear() {
 func (buffer *Buffer) ReadTillFull(data []byte) int {
 	l := len(data)
 	read := 0
-	for read < l && buffer.BytesWritten < buffer.maxSize {
+	for read < l && read < len(data) && buffer.BytesWritten < buffer.maxSize {
 		buffer.Data[buffer.BytesWritten] = data[read]
 		read ++
 		buffer.BytesWritten ++

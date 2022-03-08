@@ -12,3 +12,6 @@ top as the "root." The Merkle root of a given block is stored in the header: for
 through a hash function to produce the block's unique hash:
 000000000000000000bfc767ef8bf28c42cbd4bdbafd9aa1b5c3c33c2b089594 in the case of block #482819. This hash is not actually
 included in the relevant block, but the next one; it is distinct from the Merkle root.
+
+
+

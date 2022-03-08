@@ -1,6 +1,6 @@
 package datacenter
 
-// RecordTemplateNewUser used when a new user is registered.
-type RecordTemplateNewUser struct {
-
-}
+const InfoDatacenterReady = "datacenter ready"
+const InfoRegisterNewUser = "new registration"
+const InfoUpdateKey = "update key"
+const InfoUpdateKeySuccess = "new key"
