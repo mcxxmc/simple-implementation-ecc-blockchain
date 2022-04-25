@@ -45,7 +45,7 @@ func (bc *Blockchain) AddNewBlock(content []byte, nonce [32]byte) {
 // This process may be simplified but it should work. If any of the previous block is tampered, the final hash of the
 // block on top should always be different, even though mathematically, there is a super tiny chance for a collision.
 func (bc *Blockchain) Vote(another *Blockchain) bool {
-	if Hash(bc.Blocks[bc.Size - 1]) != Hash(another.Blocks[another.Size - 1]) {
+	if bc.Size != another.Size || Hash(bc.Blocks[bc.Size - 1]) != Hash(another.Blocks[another.Size - 1]) {
 		return false
 	}
 	b, _ :=  Verify(another)

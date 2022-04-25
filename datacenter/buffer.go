@@ -45,3 +45,10 @@ func (buffer *Buffer) ReadTillFull(data []byte) int {
 func (buffer *Buffer) IsFull() bool {
 	return buffer.BytesWritten == buffer.maxSize
 }
+
+// Copy makes a deep copy of the buffer.
+func (buffer *Buffer) Copy() *Buffer {
+	tmp := make([]byte, len(buffer.Data))
+	copy(tmp, buffer.Data)
+	return &Buffer{Data: tmp, maxSize: buffer.maxSize, BytesWritten: buffer.BytesWritten}
+}

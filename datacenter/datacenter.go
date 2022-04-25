@@ -42,7 +42,8 @@ func NewMsg(entity int, entityPubKey *galois.Point, info string) *Msg {
 type DataCenter struct {
 	Self 					*client.Client				// the own ECDH instance of the datacenter wrapped by a Client object
 	Bc 						*blockchain.Blockchain		// the blockchain
-	Users					map[int]*galois.Point		// id: public key
+	Keys 					map[galois.Point]int 		// public key: status; 0 for unused, 1 for used, 2 for deleted
+	Users					map[int]galois.Point		// id: public key
 	ActiveRecord	 		*Buffer						// the current record; will be stored in a new block when full
 }
 
@@ -57,7 +58,8 @@ func NewDataCenter(ep *ecc.Elliptic, name string, id int) (*DataCenter, error) {
 	dc := &DataCenter{
 		Self: 			 client.NewClient(ep, name, id),
 		Bc:              bc,
-		Users:           make(map[int]*galois.Point),
+		Keys: 			 make(map[galois.Point]int),
+		Users:           make(map[int]galois.Point),
 		ActiveRecord: 	 NewBuffer(BufferSize),
 	}
 	return dc, nil
@@ -68,11 +70,17 @@ func NewDataCenter(ep *ecc.Elliptic, name string, id int) (*DataCenter, error) {
 // This can be used to update the keys as well.
 func (dc *DataCenter) RandomInitialization() error {
 	dc.Self.RandomInitialization()
-	dc.Users[dc.Self.Id] = dc.Self.PubKey		// add own pub key to the users
+	dc.Users[dc.Self.Id] = *dc.Self.PubKey		// add own pub key to the users
+	dc.Keys[dc.Self.GetPublicKey()] = 1
 
 	// write a msg
 	err := dc.Write(NewMsg(dc.Self.Id, dc.Self.PubKey, InfoDatacenterReady))
 	return err
+}
+
+// PublicKeyExists checks if the public key is already used.
+func (dc *DataCenter) PublicKeyExists(publicKey galois.Point) bool {
+	return dc.Keys[publicKey] > 0
 }
 
 // RequestPublicKey returns a copy of the public key given the user id.
@@ -92,14 +100,19 @@ func (dc *DataCenter) RequestRegisterNewUser(userId int, userPubKey galois.Point
 	if _, exist := dc.Users[userId]; exist {
 		return errors.New("user id already exists")
 	}
-	dc.Users[userId] = &userPubKey
+	if status := dc.Keys[userPubKey]; status == 1 || status == 2 {
+		return errors.New("the public key is already used")
+	}
+	dc.Users[userId] = userPubKey
+	dc.Keys[userPubKey] = 1
 
 	// write a msg
 	err := dc.Write(NewMsg(userId, &userPubKey, InfoRegisterNewUser))
 	return err
 }
 
-// RequestUpdateUserPubKey updates the public key of a certain user; should verify the identity of the user first.
+// RequestUpdateUserPubKey updates the public key of a certain user;
+// should verify the identity of the user BEFORE calling this function!
 //
 // sharedKeyFromUser = user privateKey * datacenter pubKey = datacenter privateKey * user pubKey
 func (dc *DataCenter) RequestUpdateUserPubKey(userId int, sharedKeyFromUser, newUserPubKey galois.Point) error {
@@ -107,20 +120,27 @@ func (dc *DataCenter) RequestUpdateUserPubKey(userId int, sharedKeyFromUser, new
 	if !exist {
 		return errors.New("user id not found")
 	}
+	if galois.PointEqual(userPubKey, newUserPubKey) {
+		return errors.New("old keys and new keys are the same")
+	}
+	if status := dc.Keys[newUserPubKey]; status == 1 || status == 2 {
+		return errors.New("the public key is already used")
+	}
 
 	// write the first msg
-	err := dc.Write(NewMsg(userId, userPubKey, InfoUpdateKey))
+	err := dc.Write(NewMsg(userId, &userPubKey, InfoUpdateKey))
 	if err != nil {
 		return err
 	}
 
-	calculatedSharedKey := ecc.Calculate(*userPubKey, dc.Self.Ecdh.PrivateKey, dc.Self.Ecdh.Ep)
+	calculatedSharedKey := ecc.Calculate(userPubKey, dc.Self.Ecdh.PrivateKey, dc.Self.Ecdh.Ep)
 	if !galois.PointEqual(calculatedSharedKey, sharedKeyFromUser) {
 		return errors.New("shared key does not match")
 	}
 
-	p := galois.Copy(newUserPubKey)
-	dc.Users[userId] = &p
+	dc.Users[userId] = newUserPubKey
+	dc.Keys[userPubKey] = 2
+	dc.Keys[newUserPubKey] = 1
 
 	// write the second msg
 	err = dc.Write(NewMsg(userId, &newUserPubKey, InfoUpdateKeySuccess))

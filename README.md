@@ -21,6 +21,8 @@ like a phone book. It distinguishes each user by their "phone number" (a unique 
 instead of their public keys (the public keys are used as unique ids by many 
 cryptocurrencies, though).
 
+update: now public keys are unique too.
+
 
 TODO:
 
